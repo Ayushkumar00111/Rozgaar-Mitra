@@ -3,6 +3,7 @@ import User from "@/models/User";
 import bcrypt from "bcryptjs";
 
 export async function POST(req) {
+  
   try {
     await connectDB();
     const { name, email, password } = await req.json();
@@ -13,6 +14,7 @@ export async function POST(req) {
       name,
       email,
       password: hashedPassword,
+      role: "user", 
     });
 
     return Response.json({ message: "User created", user });

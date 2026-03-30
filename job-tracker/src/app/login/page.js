@@ -19,7 +19,8 @@ export default function Login() {
     const data = await res.json();
 
     if (data.token) {
-      localStorage.setItem("token", data.token); // 🔥 important
+      localStorage.setItem("token", data.token); 
+        localStorage.setItem("role", data.user.role);// 🔥 important
       router.push("/dashboard");
     } else {
       alert(data.error);

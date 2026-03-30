@@ -23,5 +23,10 @@ export async function POST(req) {
     expiresIn: "7d",
   });
 
-  return Response.json({ message: "Login successful", token });
+  return Response.json({ message: "Login successful", token ,
+  user: {
+    id: user._id,
+    email: user.email,
+    role: user.role // 🔥 add this
+  }});
 }
