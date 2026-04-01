@@ -18,13 +18,15 @@ export default function Login() {
 
     const data = await res.json();
 
-    if (data.token) {
+    if (data.token || data.user.role === "admin") {
       localStorage.setItem("token", data.token); 
         localStorage.setItem("role", data.user.role);// 🔥 important
-      router.push("/dashboard");
+      router.push("/admin");
     } else {
-      alert(data.error);
+     router.push("/dashboard");
     }
+    
+    
   };
 
   return (
