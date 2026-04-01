@@ -14,7 +14,7 @@ export async function POST(req) {
       name,
       email,
       password: hashedPassword,
-      role: "user", 
+      role: "admin", 
     });
 
     return Response.json({ message: "User created", user });

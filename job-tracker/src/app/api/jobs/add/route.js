@@ -11,11 +11,11 @@ export async function POST(req) {
     return Response.json({ error: "Unauthorized" });
   }
 
-  const { company, role } = await req.json();
+  const { company, jobrole } = await req.json();
 
   const job = await Job.create({
     company,
-    role,
+    jobrole,
     userId: user.id, 
   });
 

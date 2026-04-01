@@ -9,7 +9,7 @@ const JobSchema = new mongoose.Schema(
       required: true, // 🔥 add this
     },
     company: String,
-    role: String,
+    jobrole: String,
     status: {
       type: String,
       enum: ["Applied", "Interview", "Rejected"],

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 
 export default function Dashboard() {
   const [company, setCompany] = useState("");
+  const [jobrole, setjobRole] = useState("");
   const [role, setRole] = useState("");
   const [jobs, setJobs] = useState([]);
   const [token, setToken] = useState(null);
@@ -25,23 +26,24 @@ export default function Dashboard() {
   //   }
   // }, []);
   useEffect(() => {
+    const storedRole = localStorage.getItem("role");
+    setRole(storedRole);
+  }, []);
+  useEffect(() => {
     const storedToken = localStorage.getItem("token");
-    const role = localStorage.getItem("role");
+
     if (storedToken) {
       setToken(storedToken);
     }
     if (!storedToken && !role) {
       router.push("/login");
     }
-    if (role !== "user") {
-      router.push("/admin"); // admin ko idhar nahi aana
-    }
   }, []);
   //logout
   const handleLogout = () => {
- localStorage.removeItem("token");
-  localStorage.removeItem("role");
-  router.push("/login");
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    router.push("/login");
   };
   //load
 
@@ -72,7 +74,7 @@ export default function Dashboard() {
 
   // ➕ Add Job
   const handleAdd = async () => {
-    if (!company || !role) {
+    if (!company || !jobrole) {
       alert("Fill all fields");
       return;
     }
@@ -83,14 +85,14 @@ export default function Dashboard() {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ company, role }),
+      body: JSON.stringify({ company, jobrole }),
     });
 
     const data = await res.json();
     console.log("ADD:", data);
 
     setCompany("");
-    setRole("");
+    setjobRole("");
 
     fetchJobs();
   };
@@ -108,6 +110,20 @@ export default function Dashboard() {
     console.log("APPLICATIONS:", data);
     setApplications(data);
   };
+   const jobsWithStatus = jobs.map((job) => {
+  const app = Array.isArray(applications)
+    ? applications.find(
+        (a) => a.jobId.toString() === job._id.toString()
+      )
+    : null;
+
+  return {
+    ...job,
+    applied: !!app,
+    status: app?.status || "Not Applied",
+  };
+});
+
   // 🔄 Update Status
   const updateStatus = async (id, status) => {
     await fetch("/api/jobs/update", {
@@ -150,22 +166,21 @@ export default function Dashboard() {
 
     fetchApplications(); // refresh
   };
-    const jobsWithStatus = jobs.map((job) => {
-    const app = applications.find(
-      (a) => a.jobId.toString() === job._id.toString(),
-    );
 
-    return {
-      ...job,
-      applied: !!app,
-      status: app?.status || "Not Applied",
-    };
-  });
+
+  const appliedCount = jobsWithStatus.filter(
+    (j) => j.status === "Applied",
+  ).length;
+
+  const rejectedCount = jobsWithStatus.filter(
+    (j) => j.status === "Rejected",
+  ).length;
   const filteredJobs = jobsWithStatus
     .filter((job) => (filter === "All" ? true : job.status === filter))
     .filter((job) => job.company.toLowerCase().includes(search.toLowerCase()));
- 
-  
+
+  console.log(role);
+
   return (
     <div className="min-h-screen bg-gray-100 p-5">
       <input
@@ -181,65 +196,74 @@ export default function Dashboard() {
         Logout
       </button>
       {role === "user" && (
-      <button onClick={() => router.push("/applications")}  className="bg-blue-500 text-white px-4 py-2 rounded">
-  My Applications
-</button>)}
- {role === "admin" && (
-    <button onClick={() => router.push("/admin/applications")}className="bg-blue-500 text-white px-4 py-2 rounded">
-      Applicants
-    </button>
-  )}
+        <button
+          onClick={() => router.push("/applications")}
+          className="bg-blue-500 text-white px-4 py-2 rounded"
+        >
+          My Applications
+        </button>
+      )}
+      {role === "admin" && (
+        <button
+          onClick={() => router.push("/admin")}
+          className="bg-blue-500 text-white px-4 py-2 rounded"
+        >
+          Recived Applicants
+        </button>
+      )}
       <h1 className="text-2xl font-bold mb-4 text-gray-800">Dashboard</h1>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         {role === "admin" && (
-        <div className="bg-white rounded-xl shadow p-4">Total: {total}</div>
+          <div className="bg-white rounded-xl shadow p-4">Total: {total}</div>
         )}
-        <div className="bg-white rounded-xl shadow p-4">Applied: {applied}</div>
         <div className="bg-white rounded-xl shadow p-4">
-          Interview: {interview}
+          Applied: {appliedCount}
         </div>
         <div className="bg-white rounded-xl shadow p-4">
-          Rejected: {rejected}
+          Interview: {appliedCount}
+        </div>
+        <div className="bg-white rounded-xl shadow p-4">
+          Rejected: {rejectedCount}
         </div>
       </div>
-{role === "admin" && (
-      <select
-        value={filter}
-        onChange={(e) => setFilter(e.target.value)}
-        className="border rounded-lg p-2 m-2 bg-white"
-      >
-        <option>All</option>
-        <option>Applied</option>
-        <option>Interview</option>
-        <option>Rejected</option>
-        <option>Not Applied</option>
-      </select>
-)}
+      {role === "admin" && (
+        <select
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          className="border rounded-lg p-2 m-2 bg-white"
+        >
+          <option>All</option>
+          <option>Applied</option>
+          <option>Interview</option>
+          <option>Rejected</option>
+          <option>Not Applied</option>
+        </select>
+      )}
       {/* ➕ Add Job Form */}
-   {role === "admin" && (
-      <input
-        placeholder="Company"
-        value={company}
-        onChange={(e) => setCompany(e.target.value)}
-        className="border rounded-lg p-2 m-2 bg-white"
-      />
-   )}
-   {role === "admin" && (
-      <input
-        placeholder="Role"
-        value={role}
-        onChange={(e) => setRole(e.target.value)}
-        className="border rounded-lg p-2 m-2 bg-white"
-      />
-   )}
-   {role === "admin" && (
+      {role === "admin" && (
+        <input
+          placeholder="Company"
+          value={company}
+          onChange={(e) => setCompany(e.target.value)}
+          className="border rounded-lg p-2 m-2 bg-white"
+        />
+      )}
+      {role === "admin" && (
+        <input
+          placeholder="Role"
+          value={jobrole}
+          onChange={(e) => setjobRole(e.target.value)}
+          className="border rounded-lg p-2 m-2 bg-white"
+        />
+      )}
+      {role === "admin" && (
         <button
           onClick={handleAdd}
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
         >
           Add Job
         </button>
-   )}
+      )}
 
       {/* 📋 Job List */}
       <div className="border rounded-lg shadow p-3 my-2">
@@ -254,8 +278,7 @@ export default function Dashboard() {
                 <b>Company:</b> {job.company}
               </p>
               <p className="text-gray-600">
-                {" "}
-                <b>Role:</b> {job.role}
+                <b>Role:</b> {job.jobrole}
               </p>
               <p className="text-gray-600">
                 <b>Status:</b> {job.status}

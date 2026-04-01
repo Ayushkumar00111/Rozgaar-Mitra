@@ -34,7 +34,7 @@ export async function GET(req) {
         status: app.status,
         job: {
           company: job.company,
-          role: job.role,
+          role: job.jobrole,
         },
         user: {
           name: applicant.name,
