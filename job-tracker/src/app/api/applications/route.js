@@ -8,7 +8,7 @@ export async function GET(req) {
   await connectDB();
 
   const user = getUserFromToken(req);
-
+console.log("USER: api application", user);
   if (!user || user.role !== "admin") {
     return Response.json({ error: "Unauthorized" });
   }
@@ -28,7 +28,7 @@ export async function GET(req) {
     applications.map(async (app) => {
       const job = await Job.findById(app.jobId);
       const applicant = await User.findById(app.userId);
-
+console.log("HEADERS:", req.headers.get("authorization"));
       return {
         _id: app._id,
         status: app.status,

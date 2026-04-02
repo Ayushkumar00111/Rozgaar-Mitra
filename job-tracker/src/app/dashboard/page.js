@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 export default function Dashboard() {
   const [company, setCompany] = useState("");
   const [jobrole, setjobRole] = useState("");
-  const [role, setRole] = useState("");
+  const [role, setRole] = useState(null);
   const [jobs, setJobs] = useState([]);
   const [token, setToken] = useState(null);
   const router = useRouter();
@@ -97,19 +97,29 @@ export default function Dashboard() {
     fetchJobs();
   };
   //fatch application
-  const fetchApplications = async () => {
-    if (!token) return;
+const fetchApplications = async () => {
+  if (!token) return;
 
-    const res = await fetch("/api/applications", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+  const res = await fetch("/api/my-applications", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
-    const data = await res.json();
-    console.log("APPLICATIONS:", data);
-    setApplications(data);
-  };
+  const data = await res.json();
+  console.log("APPLICATIONS:", data);
+
+  setApplications(Array.isArray(data) ? data : []);
+};
+
+
+  useEffect(() => {
+  if (!token) return;
+
+  fetchApplications();
+}, [token]);
+
+
    const jobsWithStatus = jobs.map((job) => {
   const app = Array.isArray(applications)
     ? applications.find(
@@ -162,16 +172,18 @@ export default function Dashboard() {
     });
 
     const data = await res.json();
-    console.log("APPLY:", data);
+    console.log("APPLY: dashboard", data);
 
-    fetchApplications(); // refresh
+   await fetchApplications(); // refresh
   };
 
 
   const appliedCount = jobsWithStatus.filter(
     (j) => j.status === "Applied",
   ).length;
-
+const appliedInterview = jobsWithStatus.filter(
+    (j) => j.status === "Interview",
+  ).length;
   const rejectedCount = jobsWithStatus.filter(
     (j) => j.status === "Rejected",
   ).length;
@@ -216,15 +228,25 @@ export default function Dashboard() {
         {role === "admin" && (
           <div className="bg-white rounded-xl shadow p-4">Total: {total}</div>
         )}
+         {role === "admin" && (
+          <div className="bg-white rounded-xl shadow p-4">Admin by conduct Interview: {interview}</div>
+        )}
+         {role === "admin" && (
+          <div className="bg-white rounded-xl shadow p-4">Admin by Reject: {rejected}</div>
+        )}
+         
+        {role === "user" && (
         <div className="bg-white rounded-xl shadow p-4">
           Applied: {appliedCount}
-        </div>
+        </div>)}
+        {role === "user" && (
         <div className="bg-white rounded-xl shadow p-4">
-          Interview: {appliedCount}
-        </div>
+          Interview: {appliedInterview}
+        </div>)}
+        {role === "user" && (
         <div className="bg-white rounded-xl shadow p-4">
           Rejected: {rejectedCount}
-        </div>
+        </div>)}
       </div>
       {role === "admin" && (
         <select
@@ -283,47 +305,51 @@ export default function Dashboard() {
               <p className="text-gray-600">
                 <b>Status:</b> {job.status}
               </p>
+                 
               <div className="mt-3">
+                {role === "admin" && (
                 <button
                   onClick={() => updateStatus(job._id, "Interview")}
                   className="bg-yellow-400 px-3 py-1 rounded mr-2"
                 >
                   Interview
-                </button>
-
+                </button>)}
+                
+{role === "admin" && (
                 <button
                   onClick={() => updateStatus(job._id, "Rejected")}
                   className="bg-red-500 text-white px-3 py-1 rounded mr-2"
                 >
                   Reject
-                </button>
-
+                </button>)}
+{role === "admin" && (
                 <button
                   onClick={() => deleteJob(job._id)}
                   className="bg-gray-800 text-white px-3 py-1 rounded"
                 >
                   Delete
-                </button>
+                </button>)}
+                
                 {role === "user" && (
-                  <button
-                    onClick={() => handleApply(job._id)}
-                    disabled={job.applied}
-                    className={`px-3 py-1 rounded text-white ${
-                      job.status === "Interview"
-                        ? "bg-blue-500"
-                        : job.status === "Rejected"
-                          ? "bg-gray-500"
-                          : job.applied
-                            ? "bg-green-500"
-                            : "bg-black"
-                    }`}
-                  >
-                    {job.status
-                      ? job.status
-                      : job.applied
-                        ? "Applied"
-                        : "Apply"}
-                  </button>
+<button
+  onClick={() => handleApply(job._id)}
+  disabled={job.applied}
+   className={`px-3 py-1 rounded text-white ${
+    job.status === "Interview"
+      ? "bg-yellow-500"
+      : job.status === "Rejected"
+      ? "bg-red-500"
+      : job.status === "Applied"
+      ? "bg-green-500"
+       : job.status === "Not Applied"
+      ? "bg-blue-500"
+      : "bg-black"
+  }`}
+>
+  {job.status === "Not Applied"
+    ? "Apply"
+    : job.status}
+</button>
                 )}
               </div>
             </div>

@@ -3,22 +3,32 @@ import { useEffect, useState } from "react";
 
 export default function Applications() {
   const [apps, setApps] = useState([]);
-  const token = localStorage.getItem("token");
-
-  const fetchApps = async () => {
-    const res = await fetch("/api/applications", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    const data = await res.json();
-    setApps(data);
-  };
+  const [token, setToken] = useState(null);
 
   useEffect(() => {
-    fetchApps();
+    const storedToken = localStorage.getItem("token");
+     console.log("TOKEN: apllication page ", storedToken); // 👈 DEBUG
+    setToken(storedToken);
   }, []);
+
+  useEffect(() => {
+    if (!token) return;
+
+    const fetchApps = async () => {
+    const res = await fetch("/api/my-applications", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+      console.log("APPLICATIONS:", data);
+
+      setApps(Array.isArray(data) ? data : []);
+    };
+
+    fetchApps();
+  }, [token]);
 
   return (
     <div className="p-5">
@@ -27,18 +37,7 @@ export default function Applications() {
       {apps.map((app) => (
         <div key={app._id} className="border p-3 my-2 rounded">
           <p><b>Job ID:</b> {app.jobId}</p>
-
-          <p
-            className={`mt-1 ${
-              app.status === "Interview"
-                ? "text-blue-500"
-                : app.status === "Rejected"
-                ? "text-red-500"
-                : "text-green-500"
-            }`}
-          >
-            {app.status}
-          </p>
+          <p>{app.status}</p>
         </div>
       ))}
     </div>

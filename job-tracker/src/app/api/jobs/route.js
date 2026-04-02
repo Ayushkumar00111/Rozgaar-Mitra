@@ -5,13 +5,8 @@ import { getUserFromToken } from "@/utils/getUser";
 export async function GET(req) {
   await connectDB();
 
-  const user = getUserFromToken(req);
-
-  if (!user) {
-    return Response.json([]);
-  }
-
-  const jobs = await Job.find({ userId: user.id });
+  
+  const jobs = await Job.find();
 
   return Response.json(jobs);
 }

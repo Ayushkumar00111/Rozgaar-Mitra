@@ -2,14 +2,19 @@ import jwt from "jsonwebtoken";
 
 export const getUserFromToken = (req) => {
   try {
-    const token = req.headers.get("authorization")?.split(" ")[1];
+    const authHeader = req.headers.get("authorization");
+
+    if (!authHeader) return null;
+
+    const token = authHeader.split(" ")[1]; // 🔥 IMPORTANT
 
     if (!token) return null;
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     return decoded;
-  } catch (error) {
+  } catch (err) {
+    console.log("TOKEN ERROR:", err.message);
     return null;
   }
 };

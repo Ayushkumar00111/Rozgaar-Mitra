@@ -21,10 +21,8 @@ export default function Login() {
     if (data.token || data.user.role === "admin") {
       localStorage.setItem("token", data.token); 
         localStorage.setItem("role", data.user.role);// 🔥 important
-      router.push("/admin");
-    } else {
-     router.push("/dashboard");
-    }
+      router.push("/dashboard");
+    } 
     
     
   };
