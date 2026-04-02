@@ -17,6 +17,7 @@ export async function POST(req) {
     company,
     jobrole,
     userId: user.id, 
+    createdBy: user.id 
   });
 
   return Response.json(job);

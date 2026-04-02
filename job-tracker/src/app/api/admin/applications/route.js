@@ -31,16 +31,15 @@ console.log("USER: api application", user);
 console.log("HEADERS:", req.headers.get("authorization"));
       return {
    
-      _id: app._id,
-  jobId: app.jobId,   // ✅ ADD THIS BACK
-  status: app.status || "Applied",
-  job: {
-    company: job?.company,
-    role: job?.jobrole,
-  },
-  user: {
-    name: applicant?.name,
-    email: applicant?.email,
+        _id: app._id,
+        status: app.status,
+        job: {
+          company: job.company,
+          role: job.jobrole,
+        },
+        user: {
+          name: applicant.name,
+          email: applicant.email,
         },
       
       };

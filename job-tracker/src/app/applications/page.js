@@ -36,7 +36,10 @@ export default function Applications() {
 
       {apps.map((app) => (
         <div key={app._id} className="border p-3 my-2 rounded">
-          <p><b>Job ID:</b> {app.jobId}</p>
+          <p><b>Applied Name:</b> {app.user.name}</p>
+           <p><b>Company:</b> {app.job.company}</p>
+            <p><b>Role:</b> {app.job.role}</p>
+             <p><b>email:</b> {app.user.email}</p>
           <p>{app.status}</p>
         </div>
       ))}

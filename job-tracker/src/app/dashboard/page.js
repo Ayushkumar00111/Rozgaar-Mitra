@@ -107,7 +107,7 @@ const fetchApplications = async () => {
   });
 
   const data = await res.json();
-  console.log("APPLICATIONS:", data);
+  console.log("APPLICATIONS: User login ", data);
 
   setApplications(Array.isArray(data) ? data : []);
 };
@@ -119,11 +119,11 @@ const fetchApplications = async () => {
   fetchApplications();
 }, [token]);
 
-
-   const jobsWithStatus = jobs.map((job) => {
+const jobsWithStatus = jobs.map((job) => {
   const app = Array.isArray(applications)
     ? applications.find(
-        (a) => a.jobId.toString() === job._id.toString()
+        (a) =>
+          a?.jobId?.toString() === job?._id?.toString()
       )
     : null;
 
@@ -217,7 +217,7 @@ const appliedInterview = jobsWithStatus.filter(
       )}
       {role === "admin" && (
         <button
-          onClick={() => router.push("/admin")}
+          onClick={() => router.push("/applications")}
           className="bg-blue-500 text-white px-4 py-2 rounded"
         >
           Recived Applicants
