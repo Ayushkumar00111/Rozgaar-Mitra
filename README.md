@@ -134,6 +134,6 @@ This project is open-source and free to use.
 
 💡 Author
 
-Ayush Singh
+Ayush Kumar
 
-🔥 Built with passion and lots of debugging!
+
