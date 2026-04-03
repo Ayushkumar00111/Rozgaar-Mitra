@@ -3,6 +3,7 @@ import Job from "@/models/Job";
 import { getUserFromToken } from "@/utils/getUser";
 
 export async function GET(req) {
+  
   await connectDB();
 
   

@@ -89,11 +89,21 @@ export default function Applications() {
   });
 
 
-  const filteredJobs = jobsWithStatus
-    .filter((job) => (filter === "All" ? true : job.status === filter))
-    .filter((job) => job.company.toLowerCase().includes(search.toLowerCase()));
+  // const filteredJobs = jobsWithStatus
+  //   .filter((job) => (filter === "All" ? true : job.status === filter))
+  //   .filter((job) => job.company.toLowerCase().includes(search.toLowerCase()));
 
-  console.log(filteredJobs);
+  // console.log(filteredJobs);
+
+const filteredData =
+  role === "admin"
+    ? applications.filter((a) =>
+        filter === "All" ? true : a.status === filter
+      )
+    : jobsWithStatus.filter((job) =>
+        filter === "All" ? true : job.status === filter
+      );
+
 
   useEffect(() => {
     if (!token) return;
@@ -116,20 +126,11 @@ export default function Applications() {
 
   return (
     <div className="p-5">
+  
       <h1 className="text-xl font-bold mb-4">My Applications</h1>
-      {role === "admin" && (
-        <select
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="border rounded-lg p-2 m-2 bg-white"
-        >
-          <option>All</option>
-          <option>Applied</option>
-          <option>Interview</option>
-          <option>Rejected</option>
-          <option>Not Applied</option>
-        </select>
-      )}
+
+   
+      
       {applications.map((app) => (
         <div key={app._id} className="border p-3 my-2 rounded">
           <p>

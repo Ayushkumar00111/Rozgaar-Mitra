@@ -5,40 +5,40 @@ import { useRouter } from "next/navigation";
 export default function Dashboard() {
   const [company, setCompany] = useState("");
   const [jobrole, setjobRole] = useState("");
-  const [role, setRole] = useState(null);
   const [jobs, setJobs] = useState([]);
-  const [token, setToken] = useState(null);
   const router = useRouter();
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
-  const total = jobs.length;
-  const applied = jobs.filter((j) => j.status === "Applied").length;
-  const interview = jobs.filter((j) => j.status === "Interview").length;
-  const rejected = jobs.filter((j) => j.status === "Rejected").length;
   const [filter, setFilter] = useState("All");
-  const [search, setSearch] = useState("");
 
-  // 🔐 Get token from localStorage
-  // useEffect(() => {
-  //   const storedToken = localStorage.getItem("token");
-  //   if (storedToken) {
-  //     setToken(storedToken);
-  //   }
-  // }, []);
+  const [search, setSearch] = useState("");
+  const [role, setRole] = useState(null);
+
+  const [token, setToken] = useState(null);
+  const [authChecked, setAuthChecked] = useState(false);
   useEffect(() => {
-    const storedRole = localStorage.getItem("role");
-    setRole(storedRole);
-  }, []);
+    if (token) {
+      fetchJobs();
+      fetchApplications();
+    }
+  }, [token]);
+
+  // ✅ AB yaha lagao
+  
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
+    const storedRole = localStorage.getItem("role");
 
-    if (storedToken) {
-      setToken(storedToken);
-    }
-    if (!storedToken && !role) {
+    if (!storedToken) {
       router.push("/login");
+    } else {
+      setToken(storedToken);
+      setRole(storedRole);
     }
+
+    setAuthChecked(true);
   }, []);
+ 
   //logout
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -50,7 +50,7 @@ export default function Dashboard() {
   // 📥 Fetch Jobs
   const fetchJobs = async () => {
     setLoading(true);
-    if (!token) return;
+    if (!token) return null;
 
     const res = await fetch("/api/jobs", {
       headers: {
@@ -63,8 +63,6 @@ export default function Dashboard() {
     setJobs(data);
     setLoading(false);
   };
-
-  
 
   // ➕ Add Job
   const handleAdd = async () => {
@@ -91,56 +89,34 @@ export default function Dashboard() {
     fetchJobs();
   };
   //fatch application
-const fetchApplications = async () => {
-  if (!token) return;
+  const fetchApplications = async () => {
+    if (!token) return;
 
-  const res = await fetch("/api/my-applications", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  const data = await res.json();
-  console.log("APPLICATIONS: User login ", data);
-
-  setApplications(Array.isArray(data) ? data : []);
-};
-
-
- 
-
-const jobsWithStatus = jobs.map((job) => {
-  const app = Array.isArray(applications)
-    ? applications.find(
-        (a) =>
-          a?.jobId?.toString() === job?._id?.toString()
-      )
-    : null;
-
-  return {
-    ...job,
-    applied: !!app,
-    status: app?.status || "Not Applied",
-
-  };
- 
-}
-);
-
-
-  // 🔄 Update Status
-  const updateStatus = async (id, status) => {
-    await fetch("/api/jobs/update", {
-      method: "PUT",
+    const res = await fetch("/api/my-applications", {
       headers: {
-        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ id, status }),
     });
 
-    fetchJobs();
+    const data = await res.json();
+    console.log("APPLICATIONS: User login ", data);
+
+    setApplications(Array.isArray(data) ? data : []);
   };
+
+  const jobsWithStatus = jobs.map((job) => {
+    const app = Array.isArray(applications)
+      ? applications.find((a) => a?.jobId?.toString() === job?._id?.toString())
+      : null;
+
+    return {
+      ...job,
+      applied: !!app,
+      status: app?.status || "Not Applied",
+    };
+  });
+
+  // 🔄 Update Status
 
   // 🗑️ Delete Job
   const deleteJob = async (id) => {
@@ -168,34 +144,51 @@ const jobsWithStatus = jobs.map((job) => {
     const data = await res.json();
     console.log("APPLY: dashboard", data);
 
-   await fetchApplications(); // refresh
+    await fetchApplications();
+    await fetchJobs(); // refresh
   };
 
-// 🚀 Run when token available
-  useEffect( () => {
+  // 🚀 Run when token available
+  useEffect(() => {
     if (token) {
       fetchJobs();
-     fetchApplications();
+      fetchApplications();
     }
   }, [token]);
 
-
+  const total = jobsWithStatus.length;
 
   const appliedCount = jobsWithStatus.filter(
     (j) => j.status === "Applied",
   ).length;
-const appliedInterview = jobsWithStatus.filter(
-    (j) => j.status === "Interview",
+
+  const userInterviewCount = applications.filter(
+    (a) => a.status === "Interview",
   ).length;
-  const rejectedCount = jobsWithStatus.filter(
-    (j) => j.status === "Rejected",
+
+  const userRejectedCount = applications.filter(
+    (a) => a.status === "Rejected",
   ).length;
+
+  const userAppliedCount = applications.length;
+
+  const adminInterviewCount = applications.filter(
+    (a) => a.status === "Interview",
+  ).length;
+
+  const adminRejectedCount = applications.filter(
+    (a) => a.status === "Rejected",
+  ).length;
+
   const filteredJobs = jobsWithStatus
     .filter((job) => (filter === "All" ? true : job.status === filter))
     .filter((job) => job.company.toLowerCase().includes(search.toLowerCase()));
 
   console.log(filteredJobs);
-
+  // ✅ ALL hooks upar hone chahiye
+ if (!authChecked) {
+    return <p>Loading...</p>;
+  }
   return (
     <div className="min-h-screen bg-gray-100 p-5">
       <input
@@ -231,27 +224,24 @@ const appliedInterview = jobsWithStatus.filter(
         {role === "admin" && (
           <div className="bg-white rounded-xl shadow p-4">Total: {total}</div>
         )}
-         {role === "admin" && (
-          <div className="bg-white rounded-xl shadow p-4">Admin by conduct Interview: {interview}</div>
+
+        {role === "admin" && (
+          <div className="bg-white rounded-xl shadow p-4">
+            Interview: {adminInterviewCount}
+          </div>
         )}
-         {role === "admin" && (
-          <div className="bg-white rounded-xl shadow p-4">Admin by Reject: {rejected}</div>
+
+        {role === "admin" && (
+          <div className="bg-white rounded-xl shadow p-4">
+            Rejected: {adminRejectedCount}
+          </div>
         )}
-         
-        {role === "user" && (
-        <div className="bg-white rounded-xl shadow p-4">
-          Applied: {appliedCount}
-        </div>)}
-        {role === "user" && (
-        <div className="bg-white rounded-xl shadow p-4">
-          Interview: {appliedInterview}
-        </div>)}
-        {role === "user" && (
-        <div className="bg-white rounded-xl shadow p-4">
-          Rejected: {rejectedCount}
-        </div>)}
+
+        {role === "user" && <div>Applied: {userAppliedCount}</div>}
+        {role === "user" && <div>Interview: {userInterviewCount}</div>}
+        {role === "user" && <div>Rejected: {userRejectedCount}</div>}
       </div>
-     
+
       {/* ➕ Add Job Form */}
       {role === "admin" && (
         <input
@@ -294,38 +284,37 @@ const appliedInterview = jobsWithStatus.filter(
                 <b>Role:</b> {job.jobrole}
               </p>
               {role === "user" && (
-              <p className="text-gray-600">
-                <b>Status:</b> {job.status}
-              </p>)}
-                 
+                <p className="text-gray-600">
+                  <b>Status:</b> {job.status}
+                </p>
+              )}
+
               <div className="mt-3">
-               
-{role === "admin" && (
-                <button
-                  onClick={() => deleteJob(job._id)}
-                  className="bg-gray-800 text-white px-3 py-1 rounded"
-                >
-                  Delete
-                </button>)}
-                
+                {role === "admin" && (
+                  <button
+                    onClick={() => deleteJob(job._id)}
+                    className="bg-gray-800 text-white px-3 py-1 rounded"
+                  >
+                    Delete
+                  </button>
+                )}
+
                 {role === "user" && (
-<button
-  onClick={() => handleApply(job._id)}
-  disabled={job.applied}
-   className={`px-3 py-1 rounded text-white ${
-    job.status === "Interview"
-    ? "bg-yellow-500"
-    : job.status === "Rejected"
-    ? "bg-red-500"
-    : job.status === "Applied"
-    ? "bg-green-500"
-    : "bg-blue-500"
-  }`}
->
-  {job.status === "Not Applied"
-    ? "Apply"
-    : job.status}
-</button>
+                  <button
+                    onClick={() => handleApply(job._id)}
+                    disabled={job.applied}
+                    className={`px-3 py-1 rounded text-white ${
+                      job.status === "Interview"
+                        ? "bg-yellow-500"
+                        : job.status === "Rejected"
+                          ? "bg-red-500"
+                          : job.status === "Applied"
+                            ? "bg-green-500"
+                            : "bg-blue-500"
+                    }`}
+                  >
+                    {job.status === "Not Applied" ? "Apply" : job.status}
+                  </button>
                 )}
               </div>
             </div>

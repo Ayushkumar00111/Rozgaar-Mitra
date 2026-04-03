@@ -31,6 +31,7 @@ export async function GET(req) {
 
       return {
         _id: app._id,
+          jobId: app.jobId,
         status: app.status || "Applied",
         job: {
           company: job?.company,
