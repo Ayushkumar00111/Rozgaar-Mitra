@@ -22,6 +22,8 @@ Frontend: Next.js (App Router), React, Tailwind CSS
 Backend: Next.js API Routes
 Database: MongoDB (Mongoose)
 Authentication: JWT (JSON Web Token)
+<img width="1366" height="626" alt="image" src="https://github.com/user-attachments/assets/7f250300-ca07-4d53-bc97-242991f86722" />
+<img width="1366" height="632" alt="image" src="https://github.com/user-attachments/assets/433abd6c-e4ff-4b6b-9558-a3535259b325" />
 
 📂 Folder Structure
 
@@ -67,6 +69,8 @@ MongoDB (Mongoose)
 Authentication:
 
 JWT (JSON Web Token)
+<img width="1366" height="633" alt="image" src="https://github.com/user-attachments/assets/ffdb9e67-b32d-4f73-b5aa-ec66651e44ea" />
+<img width="1311" height="351" alt="image" src="https://github.com/user-attachments/assets/c51e77bb-5441-4e8e-9866-b5c571705aae" />
 
 🔁 Core Logic
 Job + Application Mapping
