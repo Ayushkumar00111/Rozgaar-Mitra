@@ -64,13 +64,7 @@ export default function Dashboard() {
     setLoading(false);
   };
 
-  // 🚀 Run when token available
-  useEffect(() => {
-    if (token) {
-      fetchJobs();
-      fetchApplications();
-    }
-  }, [token]);
+  
 
   // ➕ Add Job
   const handleAdd = async () => {
@@ -113,11 +107,7 @@ const fetchApplications = async () => {
 };
 
 
-  useEffect(() => {
-  if (!token) return;
-
-  fetchApplications();
-}, [token]);
+ 
 
 const jobsWithStatus = jobs.map((job) => {
   const app = Array.isArray(applications)
@@ -131,8 +121,12 @@ const jobsWithStatus = jobs.map((job) => {
     ...job,
     applied: !!app,
     status: app?.status || "Not Applied",
+
   };
-});
+ 
+}
+);
+
 
   // 🔄 Update Status
   const updateStatus = async (id, status) => {
@@ -177,6 +171,15 @@ const jobsWithStatus = jobs.map((job) => {
    await fetchApplications(); // refresh
   };
 
+// 🚀 Run when token available
+  useEffect( () => {
+    if (token) {
+      fetchJobs();
+     fetchApplications();
+    }
+  }, [token]);
+
+
 
   const appliedCount = jobsWithStatus.filter(
     (j) => j.status === "Applied",
@@ -191,7 +194,7 @@ const appliedInterview = jobsWithStatus.filter(
     .filter((job) => (filter === "All" ? true : job.status === filter))
     .filter((job) => job.company.toLowerCase().includes(search.toLowerCase()));
 
-  console.log(role);
+  console.log(filteredJobs);
 
   return (
     <div className="min-h-screen bg-gray-100 p-5">
@@ -248,19 +251,7 @@ const appliedInterview = jobsWithStatus.filter(
           Rejected: {rejectedCount}
         </div>)}
       </div>
-      {role === "admin" && (
-        <select
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="border rounded-lg p-2 m-2 bg-white"
-        >
-          <option>All</option>
-          <option>Applied</option>
-          <option>Interview</option>
-          <option>Rejected</option>
-          <option>Not Applied</option>
-        </select>
-      )}
+     
       {/* ➕ Add Job Form */}
       {role === "admin" && (
         <input
@@ -302,26 +293,13 @@ const appliedInterview = jobsWithStatus.filter(
               <p className="text-gray-600">
                 <b>Role:</b> {job.jobrole}
               </p>
+              {role === "user" && (
               <p className="text-gray-600">
                 <b>Status:</b> {job.status}
-              </p>
+              </p>)}
                  
               <div className="mt-3">
-                {role === "admin" && (
-                <button
-                  onClick={() => updateStatus(job._id, "Interview")}
-                  className="bg-yellow-400 px-3 py-1 rounded mr-2"
-                >
-                  Interview
-                </button>)}
-                
-{role === "admin" && (
-                <button
-                  onClick={() => updateStatus(job._id, "Rejected")}
-                  className="bg-red-500 text-white px-3 py-1 rounded mr-2"
-                >
-                  Reject
-                </button>)}
+               
 {role === "admin" && (
                 <button
                   onClick={() => deleteJob(job._id)}
@@ -336,14 +314,12 @@ const appliedInterview = jobsWithStatus.filter(
   disabled={job.applied}
    className={`px-3 py-1 rounded text-white ${
     job.status === "Interview"
-      ? "bg-yellow-500"
-      : job.status === "Rejected"
-      ? "bg-red-500"
-      : job.status === "Applied"
-      ? "bg-green-500"
-       : job.status === "Not Applied"
-      ? "bg-blue-500"
-      : "bg-black"
+    ? "bg-yellow-500"
+    : job.status === "Rejected"
+    ? "bg-red-500"
+    : job.status === "Applied"
+    ? "bg-green-500"
+    : "bg-blue-500"
   }`}
 >
   {job.status === "Not Applied"
